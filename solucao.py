@@ -5,17 +5,17 @@ def determinarProximoEstado(acao, estado):
     peca = ''
 
     if acao == 'esquerda':
-        peca = estado[posicaoEspacoVazio-1:posicaoEspacoVazio]
+        peca = estado[posicaoEspacoVazio - 1:posicaoEspacoVazio]
     elif acao == 'direita':
-        peca = estado[posicaoEspacoVazio+1:posicaoEspacoVazio+2]
+        peca = estado[posicaoEspacoVazio + 1:posicaoEspacoVazio + 2]
     elif acao == 'acima':
-        peca = estado[posicaoEspacoVazio-3:posicaoEspacoVazio-2]
+        peca = estado[posicaoEspacoVazio - 3:posicaoEspacoVazio - 2]
     elif acao == 'abaixo':
-        peca = estado[posicaoEspacoVazio+3:posicaoEspacoVazio+4]
+        peca = estado[posicaoEspacoVazio + 3:posicaoEspacoVazio + 4]
 
     posicaoPeca = estado.find(peca)
     novoEstado = estado.replace('_', peca)
-    novoEstado = novoEstado[:posicaoPeca] + '_' + novoEstado[posicaoPeca+1:]
+    novoEstado = novoEstado[:posicaoPeca] + '_' + novoEstado[posicaoPeca + 1:]
 
     return acao, novoEstado
 
@@ -24,7 +24,7 @@ def sucessor(estado):
     posicaoEspacoVazio = estado.find('_')
     estadosPossiveis = []
 
-    # Dois movimentos possíveis
+    # Dois movimentos possiveis
     if posicaoEspacoVazio in [0, 2, 6, 8]:
         if posicaoEspacoVazio == 0:
             estadosPossiveis.append(determinarProximoEstado('direita', estado))
@@ -38,7 +38,7 @@ def sucessor(estado):
         elif posicaoEspacoVazio == 8:
             estadosPossiveis.append(determinarProximoEstado('esquerda', estado))
             estadosPossiveis.append(determinarProximoEstado('acima', estado))
-    # Três movimentos possíveis
+    # Tres movimentos possiveis
     elif posicaoEspacoVazio in [1, 3, 5, 7]:
         if posicaoEspacoVazio == 1:
             estadosPossiveis.append(determinarProximoEstado('direita', estado))
@@ -56,7 +56,7 @@ def sucessor(estado):
             estadosPossiveis.append(determinarProximoEstado('acima', estado))
             estadosPossiveis.append(determinarProximoEstado('esquerda', estado))
             estadosPossiveis.append(determinarProximoEstado('direita', estado))
-    # Quatro movimentos possíveis
+    # Quatro movimentos possiveis
     else:
         estadosPossiveis.append(determinarProximoEstado('acima', estado))
         estadosPossiveis.append(determinarProximoEstado('esquerda', estado))
@@ -65,21 +65,21 @@ def sucessor(estado):
 
     return estadosPossiveis
 
+
 class Nodo:
-    def __init__(self, pai, estado, acao, custo):
-        self.pai = pai
+    def __init__(self, estado, pai,acao, custo):
         self.estado = estado
+        self.pai = pai
         self.acao = acao
         self.custo = custo
 
-    def __str__(self):
-        return f'Nodo ->' \
-               f'\nPai: {self.pai}, ' \
-               f'\nEstado: {self.estado}, ' \
-               f'\nAção: {self.acao},' \
-               f'\nCusto: {self.custo}' \
-               f'\n'
-
+    def __repr__(self):
+        return '(' \
+            + self.estado + ', '\
+            + self.pai.estado + ', ' \
+            + self.acao + ', ' \
+            + str(self.custo) + \
+            ')'
 
 def expande(nodo):
     estadosPossiveis = sucessor(nodo.estado)
@@ -88,7 +88,7 @@ def expande(nodo):
     for tupla in estadosPossiveis:
         acao = tupla[0]
         estado = tupla[1]
-        novoNodo = Nodo(nodo, estado, acao, nodo.custo+1)
+        novoNodo = Nodo(estado, nodo, acao, nodo.custo + 1)
         nodos.append(novoNodo)
 
     return nodos
@@ -109,7 +109,7 @@ def dfs(estado):
     if estado == '12345678_':
         return []
 
-    nodoInicial = Nodo(None, estado, '', 0)
+    nodoInicial = Nodo(estado, None, '', 0)
     explorados = set()
     fronteira = LifoQueue(0)
     nodos = expande(nodoInicial)
@@ -123,8 +123,8 @@ def dfs(estado):
         if (nodoExpandivel.estado == '12345678_'):
             return pegarCaminho(nodoExpandivel)
 
-        if nodoExpandivel not in explorados:
-            explorados.add(nodoExpandivel)
+        if nodoExpandivel.estado not in explorados:
+            explorados.add(nodoExpandivel.estado)
             nodos = expande(nodoExpandivel)
             for nodo in nodos:
                 fronteira.put(nodo)
@@ -136,7 +136,7 @@ def bfs(estado):
     if estado == '12345678_':
         return []
 
-    nodoInicial = Nodo(None, estado, '', 0)
+    nodoInicial = Nodo(estado, None, '', 0)
     explorados = set()
     fronteira = Queue(0)
     nodos = expande(nodoInicial)
@@ -150,14 +150,10 @@ def bfs(estado):
         if nodoExpandivel.estado == '12345678_':
             return pegarCaminho(nodoExpandivel)
 
-        if nodoExpandivel not in explorados:
-            explorados.add(nodoExpandivel)
+        if nodoExpandivel.estado not in explorados:
+            explorados.add(nodoExpandivel.estado)
             nodos = expande(nodoExpandivel)
             for nodo in nodos:
                 fronteira.put(nodo)
 
     return None
-
-
-print(dfs('123456_78'))
-print(bfs('123456_78'))
