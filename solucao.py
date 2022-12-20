@@ -123,7 +123,6 @@ def dfs(estado):
 
     while fronteira.qsize() > 0:
         nodoExpandivel = fronteira.get()
-        print(fronteira.qsize())
 
         if (nodoExpandivel.estado == '12345678_'):
             return pegarCaminho(nodoExpandivel)
@@ -164,21 +163,19 @@ def bfs(estado):
     return None
 
 
-
-# A*
-
-
 def getDistanciaHamming(estado):
     distancia = 0
-    for i in range(1, 9):
-        distancia += 1 if str(i) == estado[i] else 0
+    for i in range(0, 9):
+        if estado[i] != '_':
+            distancia += 1 if str(i + 1) != estado[i] else 0
     return distancia
 
 def getDistanciaManhattan(estado):
     distancia = 0
-    for i in range(1, 9):
-        if (estado[i] != '_'):
-            distancia += abs(int(estado[i]) - i)
+    for i in range(0, 9):
+        if estado[i] != '_':
+            distancia += abs((int(estado[i]) - 1) % 3 - i % 3) + \
+                         abs((int(estado[i]) - 1) // 3 - i // 3)
     return distancia
 
 
