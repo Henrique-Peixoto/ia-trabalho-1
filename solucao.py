@@ -1,4 +1,7 @@
-from queue import Queue, LifoQueue
+from queue import Queue, LifoQueue, PriorityQueue
+from math import inf 
+from random import random
+from itertools import count
 
 def determinarProximoEstado(acao, estado):
     posicaoEspacoVazio = estado.find('_')
@@ -80,6 +83,7 @@ class Nodo:
             + self.acao + ', ' \
             + str(self.custo) + \
             ')'
+    
 
 def expande(nodo):
     estadosPossiveis = sucessor(nodo.estado)
@@ -119,6 +123,7 @@ def dfs(estado):
 
     while fronteira.qsize() > 0:
         nodoExpandivel = fronteira.get()
+        print(fronteira.qsize())
 
         if (nodoExpandivel.estado == '12345678_'):
             return pegarCaminho(nodoExpandivel)
@@ -157,3 +162,78 @@ def bfs(estado):
                 fronteira.put(nodo)
 
     return None
+
+
+
+# A*
+
+
+def getDistanciaHamming(estado):
+    distancia = 0
+    for i in range(1, 9):
+        distancia += 1 if str(i) == estado[i] else 0
+    return distancia
+
+def getDistanciaManhattan(estado):
+    distancia = 0
+    for i in range(1, 9):
+        if (estado[i] != '_'):
+            distancia += abs(int(estado[i]) - i)
+    return distancia
+
+
+def astar_hamming(estado):
+    if estado == '12345678_':
+        return []
+
+    nodoInicial = Nodo(estado, None, '', 0)
+    explorados = set()
+    fronteira = PriorityQueue()
+    nodos = expande(nodoInicial)
+    iterator = count()
+
+    for nodo in nodos:
+        fronteira.put(((nodo.custo + getDistanciaHamming(estado), next(iterator)),  nodo))
+
+    while not fronteira.empty():
+        nodoExpandivel = fronteira.get()[1]
+
+        if nodoExpandivel.estado == '12345678_':
+            return pegarCaminho(nodoExpandivel)
+
+        if nodoExpandivel.estado not in explorados:
+            explorados.add(nodoExpandivel.estado)
+            nodos = expande(nodoExpandivel)
+            for nodo in nodos:
+                fronteira.put(((nodo.custo + getDistanciaHamming(estado), next(iterator)), nodo))
+
+    return None
+
+def astar_manhattan(estado):
+    if estado == '12345678_':
+        return []
+
+    nodoInicial = Nodo(estado, None, '', getDistanciaManhattan(estado))
+    explorados = set()
+    fronteira = PriorityQueue()
+    nodos = expande(nodoInicial)
+    iterator = count()
+
+    for nodo in nodos:
+        fronteira.put(((nodo.custo + getDistanciaManhattan(estado), next(iterator)),  nodo))
+
+    while not fronteira.empty():
+        nodoExpandivel = fronteira.get()[1]
+
+        if nodoExpandivel.estado == '12345678_':
+            return pegarCaminho(nodoExpandivel)
+
+        if nodoExpandivel.estado not in explorados:
+            explorados.add(nodoExpandivel.estado)
+            nodos = expande(nodoExpandivel)
+            for nodo in nodos:
+                fronteira.put(((nodo.custo + getDistanciaManhattan(estado), next(iterator)), nodo))
+
+    return None
+
+
