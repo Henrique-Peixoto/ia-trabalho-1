@@ -1,5 +1,7 @@
-from queue import Queue, LifoQueue
+from queue import Queue, LifoQueue, PriorityQueue
 from math import inf 
+from random import random
+from itertools import count
 
 def determinarProximoEstado(acao, estado):
     posicaoEspacoVazio = estado.find('_')
@@ -81,6 +83,7 @@ class Nodo:
             + self.acao + ', ' \
             + str(self.custo) + \
             ')'
+    
 
 def expande(nodo):
     estadosPossiveis = sucessor(nodo.estado)
@@ -120,6 +123,7 @@ def dfs(estado):
 
     while fronteira.qsize() > 0:
         nodoExpandivel = fronteira.get()
+        print(fronteira.qsize())
 
         if (nodoExpandivel.estado == '12345678_'):
             return pegarCaminho(nodoExpandivel)
@@ -160,12 +164,10 @@ def bfs(estado):
     return None
 
 
-def getCustoCaminho(nodo):
-    custo = 0
-    while nodo != None:
-        custo += nodo.custo 
-        nodo = nodo.pai
-    
+
+# A*
+
+
 def getDistanciaHamming(estado):
     distancia = 0
     for i in range(1, 9):
@@ -175,7 +177,8 @@ def getDistanciaHamming(estado):
 def getDistanciaManhattan(estado):
     distancia = 0
     for i in range(1, 9):
-        distancia += abs(int(estado[i]) - i)
+        if (estado[i] != '_'):
+            distancia += abs(int(estado[i]) - i)
     return distancia
 
 
@@ -185,20 +188,15 @@ def astar_hamming(estado):
 
     nodoInicial = Nodo(estado, None, '', 0)
     explorados = set()
-    fronteira = []
+    fronteira = PriorityQueue()
     nodos = expande(nodoInicial)
+    iterator = count()
 
     for nodo in nodos:
-        fronteira.append(nodo)
+        fronteira.put(((nodo.custo + getDistanciaHamming(estado), next(iterator)),  nodo))
 
-    while fronteira.qsize() > 0:
-        custoMinimo = inf 
-        nodoExpandivel = None 
-        for nodo in fronteira:
-            custo = getCustoCaminho(nodo) + getDistanciaHamming(nodo.estado)
-            if custo < custoMinimo: 
-                custoMinimo = custo 
-                nodoExpandivel = nodo
+    while not fronteira.empty():
+        nodoExpandivel = fronteira.get()[1]
 
         if nodoExpandivel.estado == '12345678_':
             return pegarCaminho(nodoExpandivel)
@@ -207,33 +205,25 @@ def astar_hamming(estado):
             explorados.add(nodoExpandivel.estado)
             nodos = expande(nodoExpandivel)
             for nodo in nodos:
-                fronteira.put(nodo)
+                fronteira.put(((nodo.custo + getDistanciaHamming(estado), next(iterator)), nodo))
 
     return None
-
-
-
 
 def astar_manhattan(estado):
     if estado == '12345678_':
         return []
 
-    nodoInicial = Nodo(estado, None, '', 0)
+    nodoInicial = Nodo(estado, None, '', getDistanciaManhattan(estado))
     explorados = set()
-    fronteira = []
+    fronteira = PriorityQueue()
     nodos = expande(nodoInicial)
+    iterator = count()
 
     for nodo in nodos:
-        fronteira.append(nodo)
+        fronteira.put(((nodo.custo + getDistanciaManhattan(estado), next(iterator)),  nodo))
 
-    while fronteira.qsize() > 0:
-        custoMinimo = inf 
-        nodoExpandivel = None 
-        for nodo in fronteira:
-            custo = getCustoCaminho(nodo) + getDistanciaManhattan(nodo.estado)
-            if custo < custoMinimo: 
-                custoMinimo = custo 
-                nodoExpandivel = nodo
+    while not fronteira.empty():
+        nodoExpandivel = fronteira.get()[1]
 
         if nodoExpandivel.estado == '12345678_':
             return pegarCaminho(nodoExpandivel)
@@ -242,6 +232,8 @@ def astar_manhattan(estado):
             explorados.add(nodoExpandivel.estado)
             nodos = expande(nodoExpandivel)
             for nodo in nodos:
-                fronteira.put(nodo)
+                fronteira.put(((nodo.custo + getDistanciaManhattan(estado), next(iterator)), nodo))
 
     return None
+
+
