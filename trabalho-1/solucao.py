@@ -230,7 +230,7 @@ def astar_manhattan(estado):
             nodos = expande(nodoExpandivel)
             for nodo in nodos:
                 fronteira.put(((nodo.custo + getDistanciaManhattan(estado), next(iterator)), nodo))
+                
 
     return None
-
 
